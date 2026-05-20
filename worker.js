@@ -51,7 +51,7 @@ async function handleContact(request, env) {
             },
             body: JSON.stringify({
                 from: 'Portfolio <onboarding@resend.dev>',
-                to: ['endikapravadillo@gmail.com'],
+                to: ['endikapradodev@gmail.com'],
                 reply_to: email,
                 subject: `Nuevo mensaje de ${name} — Portfolio`,
                 html: `
