@@ -9,8 +9,8 @@ window.addEventListener('scroll', () => {
 });
 
 // ── Burger menu ────────────────────────────
-const burger    = document.getElementById('burger');
-const navLinks  = document.querySelector('.nav-links');
+const burger   = document.getElementById('burger');
+const navLinks = document.querySelector('.nav-links');
 
 burger.addEventListener('click', () => {
     burger.classList.toggle('open');
@@ -52,14 +52,15 @@ const roles = [
     'Desarrollador de Aplicaciones Multiplataforma',
     'Estudiante de DAM',
     'Backend Developer',
-    'Java & MySQL Dev'
+    'Java & MySQL Dev',
+    'Desarrollador Web'
 ];
 
 const typeTarget = document.querySelector('.type-role');
 if (typeTarget) {
-    let roleIndex   = 0;
-    let charIndex   = 0;
-    let isDeleting  = false;
+    let roleIndex  = 0;
+    let charIndex  = 0;
+    let isDeleting = false;
 
     function type() {
         const current = roles[roleIndex];
@@ -88,28 +89,29 @@ if (typeTarget) {
     setTimeout(type, 1500);
 }
 
-// ── Mac red dot — error shake on contact window ─
-const contactRedDot = document.querySelector('#contact .mac-dot.red');
-const contactWindow = document.querySelector('#contact .mac-window');
-
-if (contactRedDot && contactWindow) {
-    contactRedDot.classList.add('clickable');
-
-    contactRedDot.addEventListener('click', () => {
-        // Remove class first so animation can replay if clicked again
-        contactWindow.classList.remove('error-shake');
-        // Force reflow
-        void contactWindow.offsetWidth;
-        contactWindow.classList.add('error-shake');
-
-        // Clean up class after animation finishes
-        contactWindow.addEventListener('animationend', () => {
-            contactWindow.classList.remove('error-shake');
-        }, { once: true });
-    });
+// ── Mac red dot — error shake en TODAS las ventanas ─
+function triggerShake(el) {
+    el.classList.remove('error-shake');
+    void el.offsetWidth;
+    el.classList.add('error-shake');
+    el.addEventListener('animationend', () => {
+        el.classList.remove('error-shake');
+    }, { once: true });
 }
 
-// ── Contact form validation ─────────────────
+document.querySelectorAll('.mac-dot.red').forEach(dot => {
+    const macWindow = dot.closest('.mac-window') || dot.closest('.photo-shake-wrapper');
+    if (!macWindow) return;
+
+    dot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        triggerShake(macWindow);
+    });
+});
+
+// ── Contact form validation + EmailJS ────────
+emailjs.init('pAppSqlRf-Aa_hp2r');
+
 const form       = document.getElementById('contactForm');
 const formStatus = document.getElementById('formStatus');
 
@@ -133,22 +135,29 @@ if (form) {
         }
 
         if (!valid) {
-            formStatus.textContent  = '// Error: rellena todos los campos correctamente.';
-            formStatus.style.color  = '#e05555';
+            formStatus.textContent = '// Error: rellena todos los campos correctamente.';
+            formStatus.style.color = '#e05555';
             return;
         }
 
-        const btn      = form.querySelector('button[type="submit"]');
-        btn.disabled   = true;
+        const btn       = form.querySelector('button[type="submit"]');
+        btn.disabled    = true;
         btn.textContent = 'Enviando...';
 
-        setTimeout(() => {
-            formStatus.textContent  = '// Mensaje enviado con éxito. ¡Gracias!';
-            formStatus.style.color  = 'var(--accent)';
-            form.reset();
-            btn.disabled    = false;
-            btn.textContent = 'Enviar mensaje';
-        }, 1200);
+        emailjs.sendForm('service_yn7wy3n', 'template_ex1olel', form)
+            .then(() => {
+                formStatus.textContent = '// Mensaje enviado con éxito. ¡Gracias!';
+                formStatus.style.color = 'var(--accent)';
+                form.reset();
+                btn.disabled    = false;
+                btn.textContent = 'Enviar mensaje';
+            })
+            .catch(() => {
+                formStatus.textContent = '// Error al enviar. Inténtalo de nuevo.';
+                formStatus.style.color = '#e05555';
+                btn.disabled    = false;
+                btn.textContent = 'Enviar mensaje';
+            });
     });
 
     form.querySelectorAll('input, textarea').forEach(field => {
