@@ -2,6 +2,10 @@
    main.js — Portfolio Endika Prado
 ══════════════════════════════════════════ */
 
+// ── Configuración verificación email ────────
+// API gratuita, open source, sin registro ni API key
+// https://rapid-email-verifier.fly.dev
+
 // ── Navbar scroll ──────────────────────────
 const navbar = document.getElementById('navbar');
 window.addEventListener('scroll', () => {
@@ -109,17 +113,16 @@ document.querySelectorAll('.mac-dot.red').forEach(dot => {
     });
 });
 
-// ── Contact form validation + EmailJS ────────
-emailjs.init('pAppSqlRf-Aa_hp2r');
-
+// ── Contact form — envío real con Resend vía Cloudflare Worker ─
 const form       = document.getElementById('contactForm');
 const formStatus = document.getElementById('formStatus');
 
 if (form) {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         let valid = true;
 
+        // Validar campos requeridos vacíos
         form.querySelectorAll('[required]').forEach(field => {
             field.classList.remove('error');
             if (!field.value.trim()) {
@@ -128,8 +131,12 @@ if (form) {
             }
         });
 
+        // Validar formato básico de email
         const emailField = document.getElementById('email');
-        if (emailField && emailField.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value)) {
+        const emailValue = emailField.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+        if (!emailValue || !emailRegex.test(emailValue)) {
             emailField.classList.add('error');
             valid = false;
         }
@@ -140,24 +147,38 @@ if (form) {
             return;
         }
 
+        // Envío real vía Cloudflare Worker → Resend
         const btn       = form.querySelector('button[type="submit"]');
         btn.disabled    = true;
         btn.textContent = 'Enviando...';
+        formStatus.textContent = '';
 
-        emailjs.sendForm('service_yn7wy3n', 'template_ex1olel', form)
-            .then(() => {
+        try {
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name:    document.getElementById('name').value.trim(),
+                    email:   emailValue,
+                    message: document.getElementById('message').value.trim(),
+                }),
+            });
+
+            if (res.ok) {
                 formStatus.textContent = '// Mensaje enviado con éxito. ¡Gracias!';
                 formStatus.style.color = 'var(--accent)';
                 form.reset();
-                btn.disabled    = false;
-                btn.textContent = 'Enviar mensaje';
-            })
-            .catch(() => {
+            } else {
                 formStatus.textContent = '// Error al enviar. Inténtalo de nuevo.';
                 formStatus.style.color = '#e05555';
-                btn.disabled    = false;
-                btn.textContent = 'Enviar mensaje';
-            });
+            }
+        } catch (err) {
+            formStatus.textContent = '// Error de conexión. Inténtalo de nuevo.';
+            formStatus.style.color = '#e05555';
+        }
+
+        btn.disabled    = false;
+        btn.textContent = 'Enviar mensaje';
     });
 
     form.querySelectorAll('input, textarea').forEach(field => {
