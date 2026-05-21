@@ -186,6 +186,54 @@ if (form) {
     });
 }
 
+// ── Typing placeholder en el textarea de mensaje ──────
+const messageField = document.getElementById('message');
+if (messageField) {
+    const placeholders = [
+        '¿Tienes un proyecto en mente?',
+        '¿Buscas un desarrollador?',
+        '¿Quieres colaborar en algo?',
+        '¿Necesitas una web o app?',
+        'Cuéntame en qué puedo ayudarte...',
+    ];
+
+    let pIndex   = 0;
+    let pChar    = 0;
+    let pDeleting = false;
+
+    function typePlaceholder() {
+        if (document.activeElement === messageField) {
+            setTimeout(typePlaceholder, 200);
+            return;
+        }
+
+        const current = placeholders[pIndex];
+
+        if (pDeleting) {
+            pChar--;
+        } else {
+            pChar++;
+        }
+
+        messageField.setAttribute('placeholder', current.substring(0, pChar));
+
+        let speed = pDeleting ? 35 : 65;
+
+        if (!pDeleting && pChar === current.length) {
+            speed     = 2000;
+            pDeleting = true;
+        } else if (pDeleting && pChar === 0) {
+            pDeleting = false;
+            pIndex    = (pIndex + 1) % placeholders.length;
+            speed     = 300;
+        }
+
+        setTimeout(typePlaceholder, speed);
+    }
+
+    setTimeout(typePlaceholder, 1000);
+}
+
 // ── Cursor glow effect (desktop only) ──────
 if (window.matchMedia('(pointer: fine)').matches) {
     const glow = document.createElement('div');

@@ -53,9 +53,8 @@ async function handleContact(request, env) {
                 from: 'Portfolio <onboarding@resend.dev>',
                 to: ['endikapradodev@gmail.com'],
                 reply_to: email,
-                subject: `Nuevo mensaje de ${name} — Portfolio`,
+                subject: `Nuevo mensaje de ${name}`,
                 html: `
-                    <h2>Nuevo mensaje desde tu portfolio</h2>
                     <p><strong>Nombre:</strong> ${name}</p>
                     <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
                     <p><strong>Mensaje:</strong></p>
